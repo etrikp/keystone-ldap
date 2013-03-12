@@ -20,6 +20,7 @@ import base64
 import ldap
 from ldap import filter as ldap_filter
 
+from keystone.common.ldap import fakeldap, LdapWrapper
 from keystone import config
 from keystone import exception
 from keystone import identity
@@ -86,7 +87,25 @@ class UserApi(common_ldap.BaseLdap):
                 self.attribute_mapping[attr_name] = attr_val
 
     def get_connection(self, user=None, password=None):
-        conn = super(UserApi, self).get_connection(user, password)
+        if self.LDAP_URL.startswith('fake://'):
+            conn = fakeldap.FakeLdap(self.LDAP_URL)
+        else:
+            conn = LdapWrapper(self.LDAP_URL,
+                               self.page_size)
+
+        conn.conn.start_tls_s()
+
+        if user is None:
+            user = self.LDAP_USER
+
+        if password is None:
+            password = self.LDAP_PASSWORD
+
+        # not all LDAP servers require authentication, so we don't bind
+        # if we don't have any user/pass
+        if user and password:
+            conn.simple_bind_s(user, password)
+
         if self.ldap_type == UserApi.LDAP_TYPE_UNKNOWN:
             root_attrs = conn.search_s(
                 "", ldap.SCOPE_BASE, "(objectClass=*)")[0][1]
