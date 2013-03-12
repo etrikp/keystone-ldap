@@ -27,7 +27,7 @@ from keystone.common import ldap as common_ldap
 from keystone.common import sql
 from keystone.common import utils
 from keystone.common.ldap import fakeldap
-from keystone.identity import models
+from keystone.common import models
 from keystone.identity.backends import sql as backends_sql
 from keystone.identity.backends import ldap as backends_ldap
 
@@ -146,10 +146,10 @@ class UserApi(common_ldap.BaseLdap):
         return []
 
 
-for attr_name in UserApi.attribute_mapping:
-    config.register_str(
-        "%s_%s_attribute" % (UserApi.options_name, attr_name),
-        group="ldap")
+#for attr_name in UserApi.attribute_mapping:
+#    config.register_str(
+#        "%s_%s_attribute" % (UserApi.options_name, attr_name),
+#        group="ldap")
 # name of systenant
 config.register_str("systenant", group="ldap", default="systenant")
 # root of the tree containing all group records
