@@ -174,6 +174,43 @@ config.register_str("systenant", group="ldap", default="systenant")
 config.register_str("group_tree_dn", group="ldap")
 
 
+class PasswordOnlyIdentity(backends_sql.Identity):
+    """A dead simple Identity driver to check the password against
+    LDAP and do everythign else with the SQL backend"""
+
+    def __init__(self, arg):
+        super(PasswordOnlyIdentity, self).__init__()
+        self.LDAP_URL = CONF.ldap.url
+        self.LDAP_USER = CONF.ldap.user
+        self.LDAP_PASSWORD = CONF.ldap.password
+        self.suffix = CONF.ldap.suffix
+        self.systenant = getattr(CONF.ldap, "systenant", "systenant")
+
+        self.user = UserApi(CONF)
+
+    def _check_password(self, password, user_ref):
+        """Check the specified password against the data store.
+
+        This is modeled on ldap/core.py.  The idea is to make it easier to
+        subclass Identity so that you can still use it to store all the data,
+        but use some other means to check the password.
+        Note that we'll pass in the entire user_ref in case the subclass
+        needs things like user_ref.get('name')
+        For further justification, please see the follow up suggestion at
+        https://blueprints.launchpad.net/keystone/+spec/sql-identiy-pam
+
+        """
+        try:
+            conn = self.user.get_connection(user_ref.get('name'),
+                                            password)
+            if not conn:
+                raise AssertionError('Invalid user / password')
+        except Exception:
+            raise AssertionError('Invalid user / password')
+
+        return True
+
+
 class Identity(backends_sql.Identity):
     def __init__(self):
         super(Identity, self).__init__()
