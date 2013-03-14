@@ -178,7 +178,7 @@ class PasswordOnlyIdentity(backends_sql.Identity):
     """A dead simple Identity driver to check the password against
     LDAP and do everythign else with the SQL backend"""
 
-    def __init__(self, arg):
+    def __init__(self):
         super(PasswordOnlyIdentity, self).__init__()
         self.LDAP_URL = CONF.ldap.url
         self.LDAP_USER = CONF.ldap.user
