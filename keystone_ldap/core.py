@@ -204,7 +204,7 @@ class PasswordOnlyIdentity(backends_sql.Identity):
             conn = self.user.get_connection(user_ref.get('name'),
                                             password)
             if not conn:
-                raise AssertionError('Invalid user / password')
+                return utils.check_password(password, user_ref.get('password'))
         except Exception:
             raise AssertionError('Invalid user / password')
 
