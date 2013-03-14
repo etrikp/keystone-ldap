@@ -90,8 +90,7 @@ class UserApi(common_ldap.BaseLdap):
         if self.LDAP_URL.startswith('fake://'):
             conn = fakeldap.FakeLdap(self.LDAP_URL)
         else:
-            conn = LdapWrapper(self.LDAP_URL,
-                               self.page_size)
+            conn = LdapWrapper(self.LDAP_URL)
 
         conn.conn.start_tls_s()
 
