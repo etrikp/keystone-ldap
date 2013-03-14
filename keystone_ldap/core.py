@@ -200,13 +200,19 @@ class PasswordOnlyIdentity(backends_sql.Identity):
         https://blueprints.launchpad.net/keystone/+spec/sql-identiy-pam
 
         """
-        try:
-            conn = self.user.get_connection(user_ref.get('name'),
-                                            password)
-            if not conn:
-                return utils.check_password(password, user_ref.get('password'))
-        except Exception:
-            raise AssertionError('Invalid user / password')
+        ldap_user_ref = self.user.get_by_name(user_ref.get('name'))
+
+        if ldap_user_ref is None:
+           return utils.check_password(password, user_ref.get('password'))
+        else:
+            try:
+                dn = self.user._id_to_dn(ldap_user_ref.get('id'))
+                conn = self.user.get_connection(dn,
+                                                password)
+                if not conn:
+                    raise AssertionError('Invalid user / password')
+            except Exception:
+                raise AssertionError('Invalid user / password')
 
         return True
 
